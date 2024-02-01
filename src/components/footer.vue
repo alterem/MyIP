@@ -2,20 +2,20 @@
   <footer>
     <div id="copyleft">
       <p class="text-center">{{ $t('page.footerName') }} <a :href="$t('page.footerLink')" class="link-dark"
-          target="_blank"><i class="bi bi-github" :class="{ 'dark-mode': isDarkMode }"></i></a>
+          target="_blank" @click="$trackEvent('Footer', 'FooterClick', 'Github');"><i class="bi bi-github" :class="{ 'dark-mode': isDarkMode }"></i></a>
       </p>
     </div>
 
     <div id="about" class="text-center mb-2">
       <a class="link link-underline-offset link-underline-opacity-0" :class="[isDarkMode ? 'link-info' : 'link-dark']"
-        data-bs-toggle="offcanvas" href="#About" role="button" aria-controls="About">
+        data-bs-toggle="offcanvas" href="#About" role="button" aria-controls="About" @click="$trackEvent('Footer', 'FooterClick', 'About');">
         {{ $t('about.Title') }} <i class="bi bi-arrow-left-circle-fill"></i>
       </a>
     </div>
 
 
-    <div class="offcanvas offcanvas-end mt-5" :class="[isMobile ? ' w-100' :'']" tabindex="-1" id="About" aria-labelledby="AboutLabel"
-      :data-bs-theme="isDarkMode ? 'dark' : 'light'">
+    <div class="offcanvas offcanvas-end mt-5" :class="[isMobile ? ' w-100' : '']" tabindex="-1" id="About"
+      aria-labelledby="AboutLabel" :data-bs-theme="isDarkMode ? 'dark' : 'light'">
       <div class="offcanvas-header mt-3">
         <div class="btn-group" role="group">
           <button type="button" class="btn" @click="toggleContent('about')"
@@ -109,6 +109,7 @@
 <script>
 import { ref, computed, watch } from 'vue';
 import { useStore } from 'vuex';
+import '@khmyznikov/pwa-install';
 
 export default {
   name: 'Footer',
@@ -147,7 +148,7 @@ export default {
       this.showChanglog = contentType === 'changlog';
       this.$refs.offcanvasBody.scrollTop = 0;
     },
-  }
+  },
 }
 </script>
 
