@@ -10,16 +10,30 @@
       <p>{{ $t('webrtc.Note') }}</p>
     </div>
     <div class="row">
-      <div v-for="stun in stunServers" :key="stun.id" class="col-6 col-md-3 mb-4">
+      <div v-for="stun in stunServers" :key="stun.id" class="col-lg-3 col-md-6 col-12 mb-4">
         <div class="card jn-card" :class="{ 'dark-mode dark-mode-border': isDarkMode }">
           <div class="card-body">
             <h5 class="card-title"><i class="bi bi-sign-merge-left-fill"></i> {{ stun.name }}</h5>
-            <p class="card-text text-secondary" style="font-size: 10pt;">{{ stun.url }}</p>
+            <p class="card-text text-secondary" style="font-size: 10pt;"><i class="bi bi-hdd-network-fill"></i> {{
+              stun.url }}</p>
             <p class="card-text" :class="{
               'text-info': stun.ip === $t('webrtc.StatusWait'),
               'text-success': stun.ip.includes('.') || stun.ip.includes(':'),
               'text-danger': stun.ip === $t('webrtc.StatusError')
-            }" v-html="stun.ip"></p>
+            }">
+              <i class="bi"
+              :class="[stun.ip === $t('webrtc.StatusWait') ? 'bi-hourglass-split' : 'bi-pc-display-horizontal']"
+              ></i>
+              {{ stun.ip }}
+            </p>
+            <div v-if="stun.natType" class="alert" :class="{
+              'alert-info': stun.natType === $t('webrtc.StatusWait'),
+              'alert-success': stun.natType !== $t('webrtc.StatusWait'),
+            }" :data-bs-theme="isDarkMode ? 'dark' : ''">
+              <i class="bi"
+              :class="[stun.natType === $t('webrtc.StatusWait') ? 'bi-hourglass-split' : ' bi-controller']"
+              ></i> {{ stun.natType }}
+            </div>
           </div>
         </div>
       </div>
@@ -51,52 +65,60 @@ export default {
       stunServers: [
         {
           id: "google",
-          name: "Google 1",
-          url: "stun:stun.l.google.com:19302",
+          name: "Google",
+          url: "stun.l.google.com:19302",
           ip: this.$t('webrtc.StatusWait'),
+          natType: this.$t('webrtc.StatusWait'),
         },
-        {
-          id: "google",
-          name: "Google 2",
-          url: "stun:stun2.l.google.com:19302",
-          ip: this.$t('webrtc.StatusWait'),
-        },
+        // {
+        //   id: "google",
+        //   name: "Google 2",
+        //   url: "stun2.l.google.com:19302",
+        //   ip: this.$t('webrtc.StatusWait'),
+        //   natType: "",
+        // },
         {
           id: "nextcloud",
-          name: "NxtCld",
-          url: "stun:stun.nextcloud.com:443",
+          name: "NextCloud",
+          url: "stun.nextcloud.com:443",
           ip: this.$t('webrtc.StatusWait'),
+          natType: this.$t('webrtc.StatusWait'),
         },
         {
           id: "twilio",
           name: "Twilio",
-          url: "stun:global.stun.twilio.com",
+          url: "global.stun.twilio.com",
           ip: this.$t('webrtc.StatusWait'),
+          natType: this.$t('webrtc.StatusWait'),
         },
         {
           id: "cloudflare",
           name: "Cloudflare",
-          url: "stun:stun.cloudflare.com",
+          url: "stun.cloudflare.com",
           ip: this.$t('webrtc.StatusWait'),
+          natType: this.$t('webrtc.StatusWait'),
         },
-        {
-          id: "miwifi",
-          name: "MiWiFi",
-          url: "stun:stun.miwifi.com",
-          ip: this.$t('webrtc.StatusWait'),
-        },
-        {
-          id: "qq",
-          name: "QQ",
-          url: "stun:stun.qq.com",
-          ip: this.$t('webrtc.StatusWait'),
-        },
-        {
-          id: "stunprotocol",
-          name: "StnPtc",
-          url: "stun:stunserver.stunprotocol.org",
-          ip: this.$t('webrtc.StatusWait'),
-        },
+        // {
+        //   id: "miwifi",
+        //   name: "MiWiFi",
+        //   url: "stun.miwifi.com",
+        //   ip: this.$t('webrtc.StatusWait'),
+        //   natType: "",
+        // },
+        // {
+        //   id: "qq",
+        //   name: "QQ",
+        //   url: "stun.qq.com",
+        //   ip: this.$t('webrtc.StatusWait'),
+        //   natType: "",
+        // },
+        // {
+        //   id: "stunprotocol",
+        //   name: "StnPtc",
+        //   url: "stunserver.stunprotocol.org",
+        //   ip: this.$t('webrtc.StatusWait'),
+        //   natType: "",
+        // },
       ],
     }
   },
@@ -106,7 +128,7 @@ export default {
     // 测试 STUN 服务器
     async checkSTUNServer(stun) {
       try {
-        const servers = { iceServers: [{ urls: stun.url }] };
+        const servers = { iceServers: [{ urls: 'stun:' + stun.url }] };
         const pc = new RTCPeerConnection(servers);
         let candidateReceived = false;
 
@@ -117,6 +139,7 @@ export default {
             const ipMatch = /([0-9a-f]{1,4}(:[0-9a-f]{1,4}){7}|[0-9a-f]{0,4}(:[0-9a-f]{1,4}){0,6}::[0-9a-f]{0,4}|::[0-9a-f]{1,4}(:[0-9a-f]{1,4}){0,6}|[0-9]{1,3}(\.[0-9]{1,3}){3})/i.exec(candidate);
             if (ipMatch) {
               stun.ip = ipMatch[0];
+              stun.natType = this.determineNATType(candidate);
               pc.close();
             }
           }
@@ -141,10 +164,29 @@ export default {
       }
     },
 
+    // 分析ICE候选信息，推断NAT类型
+    determineNATType(candidate) {
+      const parts = candidate.split(' ');
+      const type = parts[7];
+
+      if (type === 'host') {
+        return this.$t('webrtc.NATType.host');
+      } else if (type === 'srflx') {
+        return this.$t('webrtc.NATType.srflx');
+      } else if (type === 'prflx') {
+        return this.$t('webrtc.NATType.prflx');
+      } else if (type === 'relay') {
+        return this.$t('webrtc.NATType.relay');
+      } else {
+        return this.$t('webrtc.NATType.unknown');
+      }
+    },
+
     // 测试所有 STUN 服务器
     checkAllWebRTC(isRefresh) {
       this.stunServers.forEach((server) => {
         server.ip = this.$t('webrtc.StatusWait');
+        server.natType = this.$t('webrtc.StatusWait');
         this.checkSTUNServer(server);
       });
       if (isRefresh) {
