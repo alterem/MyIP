@@ -20,8 +20,8 @@
       <div class="jn-title2">
         <h2 id="Connectivity" :class="{ 'mobile-h2': isMobile }">🚦 {{ $t('connectivity.Title') }}</h2>
         <button @click="checkAllConnectivity(false, true)"
-          :class="['btn', isDarkMode ? 'btn-dark dark-mode-refresh' : 'btn-light']"><i
-            class="bi bi-arrow-clockwise"></i></button>
+          :class="['btn', isDarkMode ? 'btn-dark dark-mode-refresh' : 'btn-light']"
+          aria-label="Refresh Connectivity Test"><i class="bi bi-arrow-clockwise"></i></button>
       </div>
       <div class="text-secondary">
         <p>{{ $t('connectivity.Note') }}</p>
@@ -30,14 +30,15 @@
         <div v-for="test in connectivityTests" :key="test.id" class="col-6 col-md-3 mb-4">
           <div class="card jn-card" :class="{ 'dark-mode dark-mode-border': isDarkMode }">
             <div class="card-body">
-              <h5 class="card-title"><i class="bi" :class="'bi-' + test.icon"></i> {{ test.name }}</h5>
-
+              <p class="jn-con-title card-title"><i class="bi" :class="'bi-' + test.icon"></i> {{ test.name }}</p>
               <p class="card-text" :class="{
                 'text-info': test.status === $t('connectivity.StatusWait'),
                 'text-success': test.status.includes($t('connectivity.StatusAvailable')) && test.time < 200,
                 'jn-text-warning': test.status.includes($t('connectivity.StatusAvailable')) && test.time >= 200,
                 'text-danger': test.status === $t('connectivity.StatusUnavailable') || test.status === $t('connectivity.StatusTimeout')
-              }">
+              }"
+              :title="$t('connectivity.minTestTime') + test.mintime + ' ms'"
+              >
                 <i v-if="test.status === $t('connectivity.StatusUnavailable') || test.status === $t('connectivity.StatusTimeout')"
                   class="bi bi-emoji-frown"></i>
                 <i v-else-if="test.status === $t('connectivity.StatusAvailable') && test.time < 200"
@@ -50,7 +51,6 @@
                   : {{ test.time }}
                   <span> ms</span>
                 </span>
-
               </p>
             </div>
           </div>
@@ -89,12 +89,13 @@ export default {
       alertMessage: "",
       connectivityTests: [
         {
-          id: "netease",
-          name: "Netease",
-          icon: "browser-safari",
-          url: "https://www.163.com/favicon.ico?",
+          id: "bilibili",
+          name: "Bilibili",
+          icon: "tv-fill",
+          url: "https://www.bilibili.com/favicon.ico?",
           status: this.$t('connectivity.StatusWait'),
           time: 0,
+          mintime: 0,
         },
         {
           id: "baidu",
@@ -103,6 +104,7 @@ export default {
           url: "https://www.baidu.com/favicon.ico?",
           status: this.$t('connectivity.StatusWait'),
           time: 0,
+          mintime: 0,
         },
         {
           id: "wechat",
@@ -111,14 +113,16 @@ export default {
           url: "https://res.wx.qq.com/a/wx_fed/assets/res/NTI4MWU5.ico?",
           status: this.$t('connectivity.StatusWait'),
           time: 0,
+          mintime: 0,
         },
         {
           id: "google",
           name: "Google",
           icon: "google",
-          url: "https://www.google.com/images/errors/robot.png?",
+          url: "https://www.google.com/favicon.ico?",
           status: this.$t('connectivity.StatusWait'),
           time: 0,
+          mintime: 0,
         },
         {
           id: "cloudflare",
@@ -127,22 +131,25 @@ export default {
           url: "https://www.cloudflare.com/favicon.ico?",
           status: this.$t('connectivity.StatusWait'),
           time: 0,
+          mintime: 0,
         },
         {
           id: "youtube",
           name: "Youtube",
           icon: "youtube",
-          url: "https://i.ytimg.com/vi/GYkq9Rgoj8E/hq720.jpg?",
+          url: "https://www.youtube.com/favicon.ico?",
           status: this.$t('connectivity.StatusWait'),
           time: 0,
+          mintime: 0,
         },
         {
           id: "github",
           name: "Github",
           icon: "github",
-          url: "https://raw.githubusercontent.com/jason5ng32/fulian4/master/background.jpg?",
+          url: "https://github.com/favicon.ico?",
           status: this.$t('connectivity.StatusWait'),
           time: 0,
+          mintime: 0,
         },
         {
           id: "chatgpt",
@@ -151,6 +158,7 @@ export default {
           url: "https://chat.openai.com/favicon.ico?",
           status: this.$t('connectivity.StatusWait'),
           time: 0,
+          mintime: 0,
         },
       ],
     };
@@ -171,7 +179,16 @@ export default {
       img.onload = () => {
         clearTimeout(timeout);
         test.status = this.$t('connectivity.StatusAvailable');
-        test.time = new Date() - beginTime;
+        let testTime = new Date() - beginTime;
+
+        if (test.mintime === 0) {
+          test.mintime = testTime;
+        } else {
+          test.mintime = Math.min(test.mintime, testTime);
+        }
+
+        test.time = testTime;
+        
         onTestComplete(true);
       };
 

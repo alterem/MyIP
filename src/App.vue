@@ -29,7 +29,8 @@
       <!-- Info Mask BTN-->
       <button v-if="isInfosLoaded" class="btn position-fixed"
         :class="infoMaskLevel === 0 ? 'btn-success' : infoMaskLevel === 1 ? 'btn-warning' : 'btn-secondary'"
-        style="bottom: 66px; right: 20px; z-index: 1050;" @click="toggleInfoMask">
+        style="bottom: 66px; right: 20px; z-index: 1050;" @click="toggleInfoMask"
+        aria-label="Toggle Info Mask">
         <i :class="infoMaskLevel === 0 ? 'bi bi-eye' : 'bi bi-eye-slash'"></i>
       </button>
     </div>
@@ -252,6 +253,7 @@ export default {
           card.asn = "AS15169";
           card.mapUrl = '/defaultMap.jpg';
           card.mapUrl_dark = '/defaultMap_dark.jpg';
+          card.showASNInfo = false;
         });
         this.$refs.dnsLeaksRef.leakTest.forEach((server) => {
           server.geo = "United States";
@@ -355,7 +357,7 @@ export default {
         {
           keys: "R",
           action: () => {
-            this.refreshEverything,
+            this.$store.commit('setRefreshEveryThing', true);
               this.$trackEvent('ShortCut', 'ShortCut', 'RefreshEverything');
           },
 
@@ -366,7 +368,7 @@ export default {
           type: "regex",
           action: (num) => {
             const card = this.$refs.IPCheckRef.ipDataCards[num - 1];
-            this.scrollToElement("IPInfo", 80);
+            this.scrollToElement("IPInfo-" + num, 180);
             this.$refs.IPCheckRef.refreshCard(card);
             this.$trackEvent('ShortCut', 'ShortCut', 'IPCheck');
           },

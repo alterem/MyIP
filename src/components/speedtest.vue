@@ -4,7 +4,7 @@
     <div class="jn-title2">
       <h2 id="SpeedTest" :class="{ 'mobile-h2': isMobile }">🚀 {{ $t('speedtest.Title') }}</h2>
       <button @click="startSpeedTest" :class="['btn', isDarkMode ? 'btn-dark dark-mode-refresh' : 'btn-light']"
-        :disabled="speedTestStatus === 'running'">
+        aria-label="Start Speed Test" :disabled="speedTestStatus === 'running'">
         <i :class="speedTestStatus === 'running' ? 'bi bi-slash-circle' : 'bi bi-caret-right-fill'"></i>
       </button>
 
@@ -18,42 +18,43 @@
           <div class="card-body">
             <div class="progress" style="height: 20px; margin: 4pt 0 20pt 0;"
               :class="{ 'jn-opacity-0': speedTestStatus == 'idle', 'jn-progress-dark': isDarkMode }">
-              <div class="progress-bar progress-bar-striped progress-bar-animated jn-progress" :class="[ speedTestStatus === 'finished'? 'bg-success' : 'bg-info']"
-                role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
-                id="speedtest-progress">
+              <div class="progress-bar progress-bar-striped progress-bar-animated jn-progress"
+                :class="[speedTestStatus === 'finished' ? 'bg-success' : 'bg-info']" role="progressbar" style="width: 0%;"
+                aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="speedtest-progress" aria-label="Progress Bar">
               </div>
             </div>
             <div class="row" style="margin-bottom: 10pt;">
               <div :class="['text-center', isMobile ? 'col-6' : 'col-3']">
-                <h5 class="speedtest-h5">{{ $t('speedtest.Download') }}</h5>
+                <p class="speedtest-h5 jn-con-title">{{ $t('speedtest.Download') }}</p>
                 <p id="download-speed" class="speedtest-h5" :class="updateSpeedTestColor(speedTestStatus)">
                   <span class="jn-speedtest-number">{{ speedTest.downloadSpeed }}</span>
                   <span v-if="speedTestStatus !== 'idle'">Mb/s</span>
                 </p>
               </div>
               <div :class="['text-center', isMobile ? 'col-6' : 'col-3']">
-                <h5 class="speedtest-h5">{{ $t('speedtest.Upload') }}</h5>
+                <p class="speedtest-h5 jn-con-title">{{ $t('speedtest.Upload') }}</p>
                 <p id="upload-speed" class="speedtest-h5" :class="updateSpeedTestColor(speedTestStatus)">
                   <span class="jn-speedtest-number">{{ speedTest.uploadSpeed }}</span>
                   <span v-if="speedTestStatus !== 'idle'">Mb/s</span>
                 </p>
               </div>
               <div :class="['text-center', isMobile ? 'col-6' : 'col-3']">
-                <h5 class="speedtest-h5">{{ $t('speedtest.Latency') }}</h5>
+                <p class="speedtest-h5 jn-con-title">{{ $t('speedtest.Latency') }}</p>
                 <p id="latency" class="speedtest-h5" :class="updateSpeedTestColor(speedTestStatus)">
                   <span class="jn-speedtest-number">{{ speedTest.latency }}</span>
                   <span v-if="speedTestStatus !== 'idle'">ms</span>
                 </p>
               </div>
               <div :class="['text-center', isMobile ? 'col-6' : 'col-3']">
-                <h5 class="speedtest-h5">{{ $t('speedtest.Jitter') }}</h5>
+                <p class="speedtest-h5 jn-con-title">{{ $t('speedtest.Jitter') }}</p>
                 <p id="jitter" class="speedtest-h5" :class="updateSpeedTestColor(speedTestStatus)">
                   <span class="jn-speedtest-number">{{ speedTest.jitter }}</span>
                   <span v-if="speedTestStatus !== 'idle'">ms</span>
                 </p>
               </div>
             </div>
-            <div class="row alert alert-success m-1 p-2 " :data-bs-theme="isDarkMode ? 'dark' : ''" v-if="speedTestStatus === 'finished'">
+            <div class="row alert alert-success m-1 p-2 " :data-bs-theme="isDarkMode ? 'dark' : ''"
+              v-if="speedTestStatus === 'finished'">
               <p id="score" class="speedtest-p"><i class="bi bi-calendar2-check"></i> {{ $t('speedtest.score') }}
                 {{ $t('speedtest.videoStreaming') }}
                 <span :class="speedTest.streamingScore >= 50 ? 'text-success' : 'text-warning'">

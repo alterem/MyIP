@@ -17,7 +17,7 @@
     "Simple": "Simple",
     "Map": "Map",
     "MapUnavailable": "Map Unavailable",
-    "Source": "Source",
+    "Source": "IP Source",
     "IP": "IP",
     "Country": "Region",
     "Region": "State",
@@ -25,7 +25,22 @@
     "ISP": "ISP",
     "ASN": "ASN",
     "IPv4Error": "Fetch Failed or No IPv4 Address",
-    "IPv6Error": "Fetch Failed or No IPv6 Address"
+    "IPv6Error": "Fetch Failed or No IPv6 Address",
+    "SelectSource": "Select IP Geolocation Source",
+    "ASNInfo": {
+        "note": "Related data for this ASN:",
+        "asnName": "ASN Name:",
+        "asnOrgName": "ASN Organization Name:",
+        "estimatedUsers": "Estimated Users:",
+        "IPv4_Pct": "IPv4 Traffic Percentage:",
+        "IPv6_Pct": "IPv6 Traffic Percentage:",
+        "HTTP_Pct": "HTTP Traffic Percentage:",
+        "HTTPS_Pct": "HTTPS Traffic Percentage:",
+        "Desktop_Pct": "Desktop Device Percentage:",
+        "Mobile_Pct": "Mobile Device Percentage:",
+        "Bot_Pct": "Bot Traffic Percentage:",
+        "Human_Pct": "Human Traffic Percentage:"
+      }
   },
   "connectivity": {
     "id": "connectivity",
@@ -35,7 +50,8 @@
     "StatusAvailable": "OK",
     "StatusUnavailable": "Unavailable",
     "StatusTimeout": "Timeout or Unavailable",
-    "checking": "Checking..."
+    "checking": "Checking...",
+    "minTestTime": "Min Test Time: "
   },
   "webrtc": {
     "id": "webrtc",
@@ -378,6 +394,38 @@
           {
             "type": "improve",
             "change": "Enhanced backend script security"
+          }
+        ]
+      },
+      {
+        "version": "v3.3",
+        "date": "Feb 6, 2024",
+        "content": [
+          {
+            "type": "add",
+            "change": "Added support for using different IP geolocation sources"
+          },
+          {
+            "type": "improve",
+            "change": "Improved user experience for connection availability detection"
+          },
+          {
+            "type": "improve",
+            "change": "Optimized UI experience"
+          }
+        ]
+      },
+      {
+        "version": "v3.4",
+        "date": "Feb 17, 2024",
+        "content": [
+          {
+            "type": "add",
+            "change": "Added ASN details viewer"
+          },
+          {
+            "type": "improve",
+            "change": "Optimized UI for displaying IP information"
           }
         ]
       }

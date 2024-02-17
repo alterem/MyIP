@@ -3,9 +3,8 @@
   <div class="dnsleak-test-section mb-4">
     <div class="jn-title2">
       <h2 id="DNSLeakTest" :class="{ 'mobile-h2': isMobile }">🛑 {{ $t('dnsleaktest.Title') }}</h2>
-      <button @click="checkAllDNSLeakTest(true)"
-        :class="['btn', isDarkMode ? 'btn-dark dark-mode-refresh' : 'btn-light']"><i
-          class="bi bi-arrow-clockwise"></i></button>
+      <button @click="checkAllDNSLeakTest(true)" :class="['btn', isDarkMode ? 'btn-dark dark-mode-refresh' : 'btn-light']"
+        aria-label="Refresh DNS Leak Test"><i class="bi bi-arrow-clockwise"></i></button>
     </div>
     <div class="text-secondary">
       <p>{{ $t('dnsleaktest.Note') }}</p>
@@ -15,14 +14,14 @@
       <div v-for="leak in leakTest" :key="leak.id" class="col-lg-3 col-md-6 col-12 mb-4">
         <div class="card jn-card" :class="{ 'dark-mode dark-mode-border': isDarkMode }">
           <div class="card-body">
-            <h5 class="card-title"><i class="bi bi-heart-pulse-fill"></i> {{ leak.name }}</h5>
+            <p class="jn-con-title card-title"><i class="bi bi-heart-pulse-fill"></i> {{ leak.name }}</p>
             <p class="card-text" :class="{
               'text-info': leak.ip === $t('dnsleaktest.StatusWait') || leak.ip === $t('dnsleaktest.StatusError'),
               'text-success': leak.ip.includes('.') || leak.ip.includes(':'),
             }">
               <i class="bi"
-              :class="[leak.ip === $t('dnsleaktest.StatusWait') || leak.ip === $t('dnsleaktest.StatusError') ? 'bi-hourglass-split' : 'bi-box-arrow-right']"
-              ></i> {{ $t('dnsleaktest.Endpoint') }}: {{
+                :class="[leak.ip === $t('dnsleaktest.StatusWait') || leak.ip === $t('dnsleaktest.StatusError') ? 'bi-hourglass-split' : 'bi-box-arrow-right']"></i>
+              {{ $t('dnsleaktest.Endpoint') }}: {{
                 leak.ip }}
             </p>
 
@@ -31,8 +30,8 @@
               'alert-success': leak.geo !== $t('dnsleaktest.StatusWait'),
             }" :data-bs-theme="isDarkMode ? 'dark' : ''">
               <i class="bi"
-              :class="[leak.ip === $t('dnsleaktest.StatusWait') || leak.ip === $t('dnsleaktest.StatusError') ? 'bi-hourglass-split' : 'bi-geo-alt-fill']"
-              ></i> {{ $t('dnsleaktest.EndpointCountry') }}: <strong>{{ leak.geo }}</strong>
+                :class="[leak.ip === $t('dnsleaktest.StatusWait') || leak.ip === $t('dnsleaktest.StatusError') ? 'bi-hourglass-split' : 'bi-geo-alt-fill']"></i>
+              {{ $t('dnsleaktest.EndpointCountry') }}: <strong>{{ leak.geo }}</strong>
             </div>
           </div>
         </div>

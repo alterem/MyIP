@@ -1,7 +1,7 @@
 <template>
     <!-- Search BTN -->
     <button class="btn btn-primary position-fixed" style="bottom: 20px; right: 20px; z-index: 1050;" data-bs-toggle="modal"
-        data-bs-target="#IPCheck" @click="$trackEvent('SideButtons', 'ToggleClick', 'QueryIP');"><i
+        aria-label="IP Check" data-bs-target="#IPCheck" @click="$trackEvent('SideButtons', 'ToggleClick', 'QueryIP');"><i
             class="bi bi-search"></i></button>
 
     <!-- Search Modal -->
@@ -9,7 +9,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content" :class="{ 'dark-mode dark-mode-border': isDarkMode }">
                 <div class="modal-header" :class="{ 'dark-mode-border': isDarkMode }">
-                    <h5 class="modal-title" id="IPCheck">{{ $t('ipcheck.Title') }}</h5>
+                    <h5 class="modal-title" id="IPCheckTitle">{{ $t('ipcheck.Title') }}</h5>
                     <button type="button" class="btn-close" :class="{ 'dark-mode-close-button': isDarkMode }"
                         data-bs-dismiss="modal" aria-label="Close"></button>
 
@@ -92,10 +92,12 @@ export default {
         const store = useStore();
         const isDarkMode = computed(() => store.state.isDarkMode);
         const isMobile = computed(() => store.state.isMobile);
+        const ipGeoSource = computed(() => store.state.ipGeoSource);
 
         return {
             isDarkMode,
-            isMobile
+            isMobile,
+            ipGeoSource
         };
     },
 
@@ -158,15 +160,28 @@ export default {
         },
 
         // 获取 IP 信息
-        async fetchIPForModal(ip) {
+        async fetchIPForModal(ip, sourceID = null) {
+            let lang = this.$Lang;
+            if (lang === 'zh') {
+                lang = 'zh-CN';
+            };
+
+            sourceID = this.ipGeoSource;
+
             const sources = [
-                { url: `/api/ipinfo?ip=${ip}`, transform: this.transformDataFromIPapi },
-                { url: `/api/ipapicom?ip=${ip}`, transform: this.transformDataFromIPapi },
-                { url: `https://ipapi.co/${ip}/json/`, transform: this.transformDataFromIPapi },
-                { url: `api/keycdn?ip=${ip}`, transform: this.transformDataFromIPapi },
+                { id: 0, url: `/api/ipchecking?ip=${ip}&lang=${lang}`, transform: this.transformDataFromIPapi },
+                { id: 1, url: `/api/ipinfo?ip=${ip}`, transform: this.transformDataFromIPapi },
+                { id: 2, url: `/api/ipsb?ip=${ip}`, transform: this.transformDataFromIPapi },
+                { id: 3, url: `/api/ipapicom?ip=${ip}&lang=${lang}`, transform: this.transformDataFromIPapi },
+                { id: 4, url: `https://ipapi.co/${ip}/json/`, transform: this.transformDataFromIPapi },
+                { id: 5, url: `api/keycdn?ip=${ip}`, transform: this.transformDataFromIPapi },
             ];
 
+            // 根据指定的源获取数据
             for (const source of sources) {
+                if (sourceID && source.id !== sourceID) {
+                    continue;
+                }
                 try {
                     const response = await fetch(source.url);
                     if (!response.ok) {
