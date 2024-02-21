@@ -15,12 +15,13 @@
         </div>
 
         <div>
-          <input class="form-check-input" type="checkbox" role="switch" id="toggleMapSwitch" @change="toggleMaps"
+          <input class="form-check-input" type="checkbox" role="button" id="toggleMapSwitch" @change="toggleMaps"
             aria-label="Toggle Map Display" :checked="isMapShown" :disabled="!isEnvBingMapKey"
             @click="$trackEvent('IPCheck', 'ToggleClick', 'ShowMap');">
 
           <label class="form-check-label" for="toggleMapSwitch">
-            <i :class="['bi', isEnvBingMapKey ? 'bi bi-map-fill' : 'bi bi-map']" aria-hidden="true"></i>
+            <i :class="['bi', isEnvBingMapKey ? 'bi bi-map-fill' : 'bi bi-map']" aria-hidden="true" role="button"
+              v-tooltip="$t('Tooltips.ToggleMaps')"></i>
           </label>
         </div>
 
@@ -28,7 +29,7 @@
         <div class="dropdown">
           <span class="ms-3" role="button" id="SelectIPGEOSource" data-bs-toggle="dropdown" aria-expanded="false"
             :aria-label="$t('ipInfos.SelectSource')">
-            <i class="bi bi-grid-fill"></i>
+            <i class="bi bi-grid-fill" v-tooltip="$t('Tooltips.SourceSelect')"></i>
           </span>
           <ul class="dropdown-menu" aria-labelledby="SelectIPGEOSource" :data-bs-theme="isDarkMode ? 'dark' : ''">
             <li class="dropdown-header">
@@ -60,14 +61,18 @@
       <div class="row">
         <div v-for="(card, index) in ipDataCards" :key="card.id" :ref="card.id"
           :class="{ 'jn-opacity': !card.asn, 'col-xl-4': true, 'col-lg-6': true, 'col-md-6': true, 'mb-4': true }">
-          <div class="card jn-card" :class="{ 'dark-mode dark-mode-border': isDarkMode }">
+          <div class="card jn-card" :class="{
+            'dark-mode dark-mode-border': isDarkMode,
+            'jn-ip-card1': !isMobile && ipGeoSource === 0,
+            'jn-ip-card2': !isMobile && ipGeoSource !== 0,
+          }">
             <div class="card-header jn-ip-title jn-link1"
               :class="{ 'dark-mode-title': isDarkMode, 'bg-light': !isDarkMode }" style="font-weight: bold;">
               <span>
                 <i class="bi" :class="'bi-' + (index + 1) + '-circle-fill'"></i>&nbsp;
                 {{ $t('ipInfos.Source') }}: {{ card.source }}</span>
               <button @click="refreshCard(card)" :class="['btn', isDarkMode ? 'btn-dark dark-mode-refresh' : 'btn-light']"
-                :aria-label="'Refresh' + card.source">
+                :aria-label="'Refresh' + card.source" v-tooltip="$t('Tooltips.RefreshIPCard')">
                 <i class="bi bi-arrow-clockwise"></i></button>
             </div>
             <div class="p-3 placeholder-glow " :class="{
@@ -84,7 +89,8 @@
                 {{ card.ip }}&nbsp;
                 <i v-if="isValidIP(card.ip)"
                   :class="copiedStatus[card.id] ? 'bi bi-clipboard-check-fill' : 'bi bi-clipboard-plus'"
-                  @click="copyToClipboard(card.ip, card.id)"></i>
+                  @click="copyToClipboard(card.ip, card.id)" role="button"
+                  v-tooltip="{ title: $t('Tooltips.CopyIP'), placement: 'right' }"></i>
               </span>
               <span v-else class="placeholder col-10"></span>
             </div>
@@ -133,7 +139,7 @@
                 <li v-show="!isMobile || !isCardsCollapsed" class="jn-list-group-item"
                   :class="{ 'dark-mode': isDarkMode }">
                   <span class="jn-text col-auto">
-                    <i class="bi bi-buildings"></i>
+                    <i class="bi bi-ethernet"></i>
                     {{ $t('ipInfos.ISP') }} :&nbsp;
                   </span>
                   <span class="col-10 ">
@@ -141,39 +147,77 @@
                   </span>
                 </li>
 
+                <li
+                  v-show="(!isMobile || !isCardsCollapsed) && ipGeoSource === 0 && card.type !== $t('ipInfos.proxyDetect.type.unknownType')"
+                  class="jn-list-group-item" :class="{ 'dark-mode': isDarkMode }">
+                  <span class="jn-text col-auto">
+                    <i class="bi bi-reception-4"></i>
+                    {{ $t('ipInfos.type') }} :&nbsp;
+                  </span>
+                  <span class="col-10 ">
+                    {{ card.type }}
+                    <span v-if="card.proxyOperator !== 'unknown'">
+                      ( {{ card.proxyOperator }} )
+                    </span>
+                  </span>
+                </li>
+
+                <li
+                  v-show="(!isMobile || !isCardsCollapsed) && ipGeoSource === 0 && card.isProxy !== $t('ipInfos.proxyDetect.unknownProxyType')"
+                  class="jn-list-group-item" :class="{ 'dark-mode': isDarkMode }">
+                  <span class="jn-text col-auto">
+                    <i class="bi bi-shield-fill-check"></i>
+                    {{ $t('ipInfos.isProxy') }} :&nbsp;
+                  </span>
+                  <span class="col-10 ">
+                    {{ card.isProxy }}
+                    <span v-if="card.proxyProtocol !== $t('ipInfos.proxyDetect.unknownProtocol')">
+                      ( {{ card.proxyProtocol }} )
+                    </span>
+                  </span>
+                </li>
+
                 <li v-show="!isMobile || !isCardsCollapsed" class="jn-list-group-item border-0"
                   :class="{ 'dark-mode': isDarkMode }">
                   <span class="jn-text col-auto">
-                    <i class="bi bi-reception-4"></i>
+                    <i class="bi bi-buildings"></i>
                     {{ $t('ipInfos.ASN') }} :&nbsp;
                   </span>
                   <span v-if="card.asnlink" class="col-9 ">
                     {{ card.asn }} <i class="bi bi-info-circle" @click="getASNInfo(card.asn, index)"
                       data-bs-toggle="collapse" :data-bs-target="'#' + 'collapseASNInfo-' + index" aria-expanded="false"
-                      :aria-controls="'collapseASNInfo-' + index"></i>
+                      :aria-controls="'collapseASNInfo-' + index" role="button"
+                      :aria-label="'Display AS Info of' + card.asn"
+                      v-tooltip="{ title: $t('Tooltips.ShowASNInfo'), placement: 'right' }"></i>
                   </span>
                 </li>
 
-                <div class="collapse alert alert-light placeholder-glow lh-lg fw-bold " :id="'collapseASNInfo-' + index"
-                  :data-bs-theme="isDarkMode ? 'dark' : ''">
+                <div class="collapse alert alert-light placeholder-glow lh-lg fw-bold p-0"
+                  :id="'collapseASNInfo-' + index" :data-bs-theme="isDarkMode ? 'dark' : ''">
 
-                  <span v-if="asnInfos[card.asn]">
-                    <i class="bi bi-info-circle-fill"></i> <span class="fw-light">{{ $t('ipInfos.ASNInfo.note') }}</span>
-                    <br />
-                    <template v-for="item in asnInfoItems">
-                      <span class="fw-light">
-                        {{ $t(`ipInfos.ASNInfo.${item.key}`) }}
-                      </span>
-                      {{ item.format(asnInfos[card.asn][item.key]) }}
+                  <!-- 通过将 collapse 的 padding 设置为 0，然后添加一个子 div 设置 padding 的方式，避免 Bootstrap 的 collapse 发生卡顿，很奇怪的 bug -->
+
+                  <div class="p-3">
+                    <span v-if="asnInfos[card.asn]">
+                      <i class="bi bi-info-circle-fill"></i> <span class="fw-light">{{ $t('ipInfos.ASNInfo.note')
+                      }}</span>
                       <br />
-                    </template>
-                  </span>
-
-                  <span v-else>
-                    <span v-for="(colSize, index) in placeholderSizes" :key="index" :class="{ 'dark-mode': isDarkMode }">
-                      <span :class="`placeholder col-${colSize}`"></span>
+                      <template v-for="item in asnInfoItems">
+                        <span class="fw-light">
+                          {{ $t(`ipInfos.ASNInfo.${item.key}`) }}
+                        </span>
+                        {{ item.format(asnInfos[card.asn][item.key]) }}
+                        <br />
+                      </template>
                     </span>
-                  </span>
+
+                    <span v-else>
+                      <span v-for="(colSize, index) in placeholderSizes" :key="index"
+                        :class="{ 'dark-mode': isDarkMode }">
+                        <span :class="`placeholder col-${colSize}`"></span>
+                      </span>
+                    </span>
+                  </div>
                 </div>
               </ul>
             </div>
@@ -658,6 +702,45 @@ export default {
         throw new Error(data.reason);
       }
 
+
+      if (this.ipGeoSource === 0) {
+
+        const proxyDetect = data.proxyDetect || {};
+
+        const isProxy = proxyDetect.proxy === 'yes' ? this.$t('ipInfos.proxyDetect.yes') :
+          proxyDetect.proxy === 'no' ? this.$t('ipInfos.proxyDetect.no') :
+            this.$t('ipInfos.proxyDetect.unknownProxyType');
+
+        const type = proxyDetect.type === 'Business' ? this.$t('ipInfos.proxyDetect.type.Business') :
+          proxyDetect.type === 'Residential' ? this.$t('ipInfos.proxyDetect.type.Residential') :
+            proxyDetect.type === 'Wireless' ? this.$t('ipInfos.proxyDetect.type.Wireless') :
+              proxyDetect.type === 'Hosting' ? this.$t('ipInfos.proxyDetect.type.Hosting') :
+                proxyDetect.type ? proxyDetect.type : this.$t('ipInfos.proxyDetect.type.unknownType');
+
+        const proxyProtocol = proxyDetect.protocol === 'unknown' ? this.$t('ipInfos.proxyDetect.unknownProtocol') :
+          proxyDetect.protocol ? proxyDetect.protocol : this.$t('ipInfos.proxyDetect.unknownProtocol');
+
+        const proxyOperator = proxyDetect.operator ? proxyDetect.operator : "";
+
+        return {
+          country_name: data.country_name || "",
+          country_code: data.country || "",
+          region: data.region || "",
+          city: data.city || "",
+          latitude: data.latitude || "",
+          longitude: data.longitude || "",
+          isp: data.org || "",
+          asn: data.asn || "",
+          asnlink: data.asn ? `https://radar.cloudflare.com/${data.asn}` : false,
+          mapUrl: data.latitude && data.longitude ? `/api/map?latitude=${data.latitude}&longitude=${data.longitude}&language=${this.bingMapLanguage}&CanvasMode=CanvasLight` : "",
+          mapUrl_dark: data.latitude && data.longitude ? `/api/map?latitude=${data.latitude}&longitude=${data.longitude}&language=${this.bingMapLanguage}&CanvasMode=RoadDark` : "",
+          isProxy: isProxy,
+          type: type,
+          proxyProtocol: proxyProtocol,
+          proxyOperator: proxyOperator,
+        };
+      }
+
       return {
         country_name: data.country_name || "",
         country_code: data.country || "",
@@ -768,10 +851,10 @@ export default {
       }, 5000);
     },
 
-    // 从后端 API 获取 ASN 信息， /api/asninfo?asn=
+    // 从后端 API 获取 ASN 信息
     async getASNInfo(asn, ipDataCardsIndex) {
+      this.$trackEvent('IPCheck', 'ASNInfoClick', 'Show ASN Info');
       try {
-
         this.ipDataCards[ipDataCardsIndex].showASNInfo = true;
         // 如果 asnInfos 中已有该 ASN 的信息，则直接返回
         if (this.asnInfos[asn]) {
@@ -781,8 +864,6 @@ export default {
 
         const response = await fetch(`/api/cfradar?asn=${asn}`);
         const data = await response.json();
-
-        // 将 ASN 信息写入到 asnInfos 中，键为 ASN 号码
         this.asnInfos['AS' + asn] = data;
       } catch (error) {
         console.error("Error fetching ASN info:", error);

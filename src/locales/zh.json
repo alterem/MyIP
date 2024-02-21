@@ -10,6 +10,20 @@
     "PingTest": "全球延迟",
     "MTRTest": "MTR 测试"
   },
+  "Tooltips":{
+    "RefreshIPCard": "刷新 IP 信息",
+    "RefreshConnectivityTests": "刷新连通性测试",
+    "RefreshWebRTC": "刷新 WebRTC 测试",
+    "RefreshDNSLeakTest": "刷新 DNS 泄漏测试",
+    "StartSpeedTest": "开始网速测试",
+    "ToggleMaps": "打开/关闭地图显示",
+    "SourceSelect": "选择 IP 归属地数据来源",
+    "ShowASNInfo": "显示 AS 详细信息",
+    "CopyIP": "复制 IP 地址",
+    "InfoMask": "隐藏信息",
+    "QueryIP": "查询 IP 信息",
+    "GithubLink": "查看源代码"
+  },
   "ipInfos": {
     "id": "ipinfos",
     "Title": "IP 信息",
@@ -27,10 +41,12 @@
     "IPv4Error": "获取失败或不存在 IPv4 地址",
     "IPv6Error": "获取失败或不存在 IPv6 地址",
     "SelectSource": "选择 IP 归属地数据来源",
+    "type": "类型",
+    "isProxy": "代理",
     "ASNInfo": {
-      "note": "此 ASN 的相关数据：",
-      "asnName": "ASN 名称：",
-      "asnOrgName": "ASN 组织名称：",
+      "note": "此 AS 的相关数据：",
+      "asnName": "AS 名称：",
+      "asnOrgName": "AS 组织名称：",
       "estimatedUsers": "估计用户数：",
       "IPv4_Pct": "IPv4 流量占比：",
       "IPv6_Pct": "IPv6 流量占比：",
@@ -40,6 +56,19 @@
       "Mobile_Pct": "移动设备占比：",
       "Bot_Pct": "机器人流量占比：",
       "Human_Pct": "人类流量占比："
+    },
+    "proxyDetect": {
+      "yes": "可能是代理或 VPN",
+      "no": "不是代理或 VPN",
+      "unknownProxyType": "未知类型",
+      "unknownProtocol": "未知协议",
+      "type": {
+        "Residential": "住宅线路",
+        "Wireless": "无线网络",
+        "Business": "商业线路",
+        "Hosting": "数据中心",
+        "unknownType": "未知类型"
+      }
     }
   },
   "connectivity": {
@@ -129,7 +158,8 @@
     "Title": "IP 查询",
     "Placeholder": "请输入 IP 地址",
     "Button": "查询",
-    "Error": "请输入有效的 IPv4 或 IPv6 地址。"
+    "Error": "请输入有效的 IPv4 或 IPv6 地址。",
+    "recaptchaError": "你未通过 reCAPTCHA 验证，查询功能已被禁用"
   },
   "alert": {
     "id": "alert",
@@ -422,6 +452,10 @@
           {
             "type": "add",
             "change": "添加 ASN 详细信息查看器"
+          },
+          {
+            "type": "add",
+            "change": "添加 IP 地址是否为代理的判断"
           },
           {
             "type": "improve",

@@ -38,8 +38,18 @@
 
 .jn-card {
   box-shadow: 0 0 10pt #0000001c;
-  height: fit-content;
+  height: 100%;
   border: 1px solid #9c9c9c2e;
+}
+
+.jn-ip-card1 {
+  min-height: 488px;
+  height: fit-content;
+}
+
+.jn-ip-card2 {
+  min-height: 388px;
+  height: fit-content;
 }
 
 .jn-card:hover {
@@ -274,4 +284,7 @@ footer {
 
 .jn-ping-form-select {
   min-width: 140pt;
+}
+.grecaptcha-badge { 
+  visibility: hidden;
 }

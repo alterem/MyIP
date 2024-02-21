@@ -10,6 +10,20 @@
         "PingTest": "Latence mondiale",
         "MTRTest": "Test MTR"
     },
+    "Tooltips": {
+        "RefreshIPCard": "Actualiser la carte IP",
+        "RefreshConnectivityTests": "Actualiser les tests de connectivité",
+        "RefreshWebRTC": "Actualiser le test WebRTC",
+        "RefreshDNSLeakTest": "Actualiser le test de fuite DNS",
+        "StartSpeedTest": "Démarrer le test de vitesse",
+        "ToggleMaps": "Afficher/Masquer les cartes",
+        "SourceSelect": "Sélectionner la source de géolocalisation IP",
+        "ShowASNInfo": "Afficher les détails AS",
+        "CopyIP": "Copier l'adresse IP",
+        "InfoMask": "Masquer les informations IP",
+        "QueryIP": "Interroger l'adresse IP",
+        "GithubLink": "Voir le code source sur GitHub"
+    },
     "ipInfos": {
         "id": "ipinfos",
         "Title": "Infos IP",
@@ -27,10 +41,12 @@
         "IPv4Error": "Échec de récupération ou pas d'adresse IPv4",
         "IPv6Error": "Échec de récupération ou pas d'adresse IPv6",
         "SelectSource": "Source de géolocalisation IP",
+        "type": "Type",
+        "isProxy": "Proxy",
         "ASNInfo": {
-            "note": "Données associées à cet ASN :",
-            "asnName": "Nom de l'ASN :",
-            "asnOrgName": "Nom de l'organisation de l'ASN :",
+            "note": "Données associées à cet AS :",
+            "asnName": "Nom de l'AS :",
+            "asnOrgName": "Nom de l'organisation de l'AS :",
             "estimatedUsers": "Nombre d'utilisateurs estimé :",
             "IPv4_Pct": "Pourcentage de trafic IPv4 :",
             "IPv6_Pct": "Pourcentage de trafic IPv6 :",
@@ -40,6 +56,19 @@
             "Mobile_Pct": "Pourcentage d'appareils mobiles :",
             "Bot_Pct": "Pourcentage de trafic de robots :",
             "Human_Pct": "Pourcentage de trafic humain :"
+        },
+        "proxyDetect": {
+            "yes": "Possiblement un proxy ou un VPN",
+            "no": "Pas un proxy ou un VPN",
+            "unknownProxyType": "Type inconnu",
+            "unknownProtocol": "Protocole inconnu",
+            "type": {
+                "Residential": "Résidentiel",
+                "Wireless": "Sans fil",
+                "Business": "Entreprise",
+                "Hosting": "Hébergement",
+                "unknownType": "Type inconnu"
+            }
         }
     },
     "connectivity": {
@@ -129,7 +158,8 @@
         "Title": "Vérification IP",
         "Placeholder": "Veuillez entrer une adresse IP",
         "Button": "Vérifier",
-        "Error": "Veuillez entrer une adresse IPv4 ou IPv6 valide."
+        "Error": "Veuillez entrer une adresse IPv4 ou IPv6 valide.",
+        "recaptchaError": "Il semble que vous êtes un robot."
     },
     "alert": {
         "id": "alert",
@@ -416,19 +446,23 @@
                 ]
             },
             {
-                    "version": "v3.4",
-                    "date": "Feb 17, 2024",
-                    "content": [
-                        {
-                            "type": "add",
-                            "change": "Ajout d'un visualiseur de détails ASN"
-                        },
-                        {
-                            "type": "improve",
-                            "change": "Optimisation de l'interface utilisateur pour l'affichage des informations IP"
-                        }
-                    ]
-                }
+                "version": "v3.4",
+                "date": "Feb 17, 2024",
+                "content": [
+                    {
+                        "type": "add",
+                        "change": "Ajout d'un visualiseur de détails ASN"
+                    },
+                    {
+                        "type": "add",
+                        "change": "Ajout de la détection de proxy"
+                    },
+                    {
+                        "type": "improve",
+                        "change": "Optimisation de l'interface utilisateur pour l'affichage des informations IP"
+                    }
+                ]
+            }
         ]
     }
 }

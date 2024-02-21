@@ -1,7 +1,7 @@
 <template>
     <!-- Search BTN -->
     <button class="btn btn-primary position-fixed" style="bottom: 20px; right: 20px; z-index: 1050;" data-bs-toggle="modal"
-        aria-label="IP Check" data-bs-target="#IPCheck" @click="$trackEvent('SideButtons', 'ToggleClick', 'QueryIP');"><i
+        aria-label="IP Check" data-bs-target="#IPCheck" @click="openQueryIP" v-tooltip="$t('Tooltips.QueryIP')"><i
             class="bi bi-search"></i></button>
 
     <!-- Search Modal -->
@@ -46,15 +46,45 @@
                                     </span>
                                 </li>
                                 <li class="list-group-item jn-list-group-item" :class="{ 'dark-mode': isDarkMode }"><span
-                                        class="jn-text col-auto"><i class="bi bi-buildings"></i> {{ $t('ipInfos.ISP')
+                                        class="jn-text col-auto"><i class="bi bi-ethernet"></i> {{ $t('ipInfos.ISP')
                                         }}</span>&nbsp;:&nbsp;
                                     <span class="col-10 ">
                                         {{ modalQueryResult.isp }}
                                     </span>
                                 </li>
+
+
+                                <li v-if="ipGeoSource === 0 && modalQueryResult.type !== $t('ipInfos.proxyDetect.type.unknownType')"
+                                    class="list-group-item jn-list-group-item" :class="{ 'dark-mode': isDarkMode }"><span
+                                        class="jn-text col-auto">
+                                        <i class="bi bi-reception-4"></i> {{ $t('ipInfos.type')
+                                        }}</span>&nbsp;:&nbsp;
+                                    <span class="col-10 ">
+                                        {{ modalQueryResult.type }}
+                                        <span v-if="modalQueryResult.proxyOperator !== 'unknown'">
+                                            ( {{ modalQueryResult.proxyOperator }} )
+                                        </span>
+                                    </span>
+                                </li>
+
+                                <li v-if="ipGeoSource === 0 && modalQueryResult.isProxy !== $t('ipInfos.proxyDetect.unknownProxyType')"
+                                    class="list-group-item jn-list-group-item" :class="{ 'dark-mode': isDarkMode }"><span
+                                        class="jn-text col-auto">
+                                        <i class="bi bi-shield-fill-check"></i>
+                                        {{ $t('ipInfos.isProxy') }}</span>&nbsp;:&nbsp;
+                                    <span class="col-10 ">
+                                        {{ modalQueryResult.isProxy }}
+                                        <span
+                                            v-if="modalQueryResult.proxyProtocol !== $t('ipInfos.proxyDetect.unknownProtocol')">
+                                            ( {{ modalQueryResult.proxyProtocol }} )
+                                        </span>
+                                    </span>
+                                </li>
+
+
                                 <li class="list-group-item jn-list-group-item" :class="{ 'dark-mode': isDarkMode }">
                                     <span class="jn-text col-auto">
-                                        <i class="bi bi-reception-4"></i> {{ $t('ipInfos.ASN') }}</span>&nbsp;:&nbsp;
+                                        <i class="bi bi-buildings"></i> {{ $t('ipInfos.ASN') }}</span>&nbsp;:&nbsp;
                                     <span class="col-10 ">
                                         <a v-if="modalQueryResult.asnlink" :href="modalQueryResult.asnlink" target="_blank"
                                             class="link-underline-opacity-50 link-underline-opacity-100-hover"
@@ -68,10 +98,17 @@
                     </div>
                 </div>
                 <div class="modal-footer" :class="{ 'dark-mode-border': isDarkMode }">
-                    <button type="button" class="btn btn-primary"
+                    <button id="sumitQueryButton" type="button" class="btn btn-primary"
                         :class="{ 'btn-secondary': !isValidIP(inputIP), 'btn-primary': isValidIP(inputIP) }"
-                        @click="submitQuery" :disabled="!isValidIP(inputIP)">{{ $t('ipcheck.Button') }}</button>
+                        @click="submitQuery" :disabled="!isValidIP(inputIP) || reCaptchaStatus === false || isChecking === 'running'
+                        ">{{
+                            $t('ipcheck.Button') }}</button>
 
+                </div>
+                <div v-if="reCaptchaEnabled" class="px-3 pb-3 text-secondary" style="font-size:10px">
+                    This site is protected by reCAPTCHA and the Google
+                    <a href="https://policies.google.com/privacy">Privacy Policy</a> and
+                    <a href="https://policies.google.com/terms">Terms of Service</a> apply.
                 </div>
 
             </div>
@@ -106,21 +143,98 @@ export default {
             inputIP: '',
             modalQueryResult: null,
             modalQueryError: "",
+            reCaptchaStatus: true,
+            reCaptchaEnabled: false,
+            reCaptchaLoaded: false,
+            isChecking: "idle",
         }
     },
 
     methods: {
-
         // 查询 IP 信息
         async submitQuery() {
+            // 首先检查输入的 IP 是否有效
             if (this.isValidIP(this.inputIP)) {
                 this.modalQueryError = "";
                 this.modalQueryResult = null;
-                await this.fetchIPForModal(this.inputIP);
+                this.isChecking = "running";
+                // 如果 reCAPTCHA 已启用，验证令牌
+                switch (this.reCaptchaEnabled) {
+                    case true:
+                        // 执行 reCAPTCHA 验证
+                        grecaptcha.ready(async () => {
+                            grecaptcha.execute(import.meta.env.VITE_RECAPTCHA_SITE_KEY, { action: 'submit' }).then(async (token) => {
+                                let recaptchaSuccess = await this.verifyRecaptchaToken(token);
+                                if (recaptchaSuccess) {
+                                    this.reCaptchaStatus = true;
+                                    await this.fetchIPForModal(this.inputIP);
+                                } else {
+                                    this.reCaptchaStatus = false;
+                                    this.modalQueryError = this.$t('ipcheck.recaptchaError');
+                                    this.isChecking = "idle";
+                                }
+                            });
+                        });
+                        break;
+                    case false:
+                        await this.fetchIPForModal(this.inputIP);
+                        break;
+                }
             } else {
+                // 如果 IP 无效，设置错误信息
                 this.modalQueryError = this.$t('ipcheck.Error');
                 this.modalQueryResult = null;
+                this.isChecking = "idle";
             }
+        },
+
+        // 加载 reCAPTCHA 脚本
+        loadRecaptchaScript() {
+            if (this.reCaptchaEnabled === false || this.reCaptchaLoaded === true) {
+                return;
+            }
+            // 创建一个 script 元素
+            const script = document.createElement('script');
+            script.src = `https://www.recaptcha.net/recaptcha/api.js?render=${import.meta.env.VITE_RECAPTCHA_SITE_KEY}`;
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+            // 获取加载完成的状态
+            script.onload = () => {
+                this.reCaptchaLoaded = true;
+            };
+        },
+
+        // 验证 reCAPTCHA 令牌
+        async verifyRecaptchaToken(token) {
+            const response = await fetch(`/api/recaptcha?token=${token}`, {
+                method: 'GET',
+            });
+            const data = await response.json();
+            return data.success;
+        },
+
+        // 验证后端是否支持 reCAPTCHA
+        async checkRecaptchaSupport() {
+            const response = await fetch(`/api/validate-recaptcha-key`, {
+                method: 'GET',
+            });
+            const data = await response.json();
+            if (data.isValid) {
+                this.reCaptchaEnabled = true;
+            } else {
+                this.reCaptchaEnabled = false;
+                this.reCaptchaLoaded = true;
+            }
+        },
+
+        // 打开查询 IP 的模态框
+        openQueryIP() {
+            // 如果 reCAPTCHA 脚本尚未加载，加载它
+            if (!window.grecaptcha && this.reCaptchaEnabled) {
+                this.loadRecaptchaScript();
+            }
+            this.$trackEvent('SideButtons', 'ToggleClick', 'QueryIP');
         },
 
         // 重置 modalQueryResult
@@ -144,6 +258,45 @@ export default {
                 throw new Error(data.reason);
             }
 
+            if (this.ipGeoSource === 0) {
+
+                const proxyDetect = data.proxyDetect || {};
+
+                const isProxy = proxyDetect.proxy === 'yes' ? this.$t('ipInfos.proxyDetect.yes') :
+                    proxyDetect.proxy === 'no' ? this.$t('ipInfos.proxyDetect.no') :
+                        this.$t('ipInfos.proxyDetect.unknownProxyType');
+
+                const type = proxyDetect.type === 'Business' ? this.$t('ipInfos.proxyDetect.type.Business') :
+                    proxyDetect.type === 'Residential' ? this.$t('ipInfos.proxyDetect.type.Residential') :
+                        proxyDetect.type === 'Wireless' ? this.$t('ipInfos.proxyDetect.type.Wireless') :
+                            proxyDetect.type === 'Hosting' ? this.$t('ipInfos.proxyDetect.type.Hosting') :
+                                proxyDetect.type ? proxyDetect.type : this.$t('ipInfos.proxyDetect.type.unknownType');
+
+                const proxyProtocol = proxyDetect.protocol === 'unknown' ? this.$t('ipInfos.proxyDetect.unknownProtocol') :
+                    proxyDetect.protocol ? proxyDetect.protocol : this.$t('ipInfos.proxyDetect.unknownProtocol');
+
+                const proxyOperator = proxyDetect.operator ? proxyDetect.operator : "";
+
+                return {
+                    country_name: data.country_name || "",
+                    country_code: data.country || "",
+                    region: data.region || "",
+                    city: data.city || "",
+                    latitude: data.latitude || "",
+                    longitude: data.longitude || "",
+                    isp: data.org || "",
+                    asn: data.asn || "",
+                    asnlink: data.asn ? `https://radar.cloudflare.com/${data.asn}` : false,
+                    mapUrl: data.latitude && data.longitude ? `/api/map?latitude=${data.latitude}&longitude=${data.longitude}&language=${this.bingMapLanguage}&CanvasMode=CanvasLight` : "",
+                    mapUrl_dark: data.latitude && data.longitude ? `/api/map?latitude=${data.latitude}&longitude=${data.longitude}&language=${this.bingMapLanguage}&CanvasMode=RoadDark` : "",
+                    isProxy: isProxy,
+                    type: type,
+                    proxyProtocol: proxyProtocol,
+                    proxyOperator: proxyOperator,
+                };
+            }
+
+
             return {
                 country_name: data.country_name || "",
                 country_code: data.country || "",
@@ -161,6 +314,12 @@ export default {
 
         // 获取 IP 信息
         async fetchIPForModal(ip, sourceID = null) {
+
+            if (this.reCaptchaStatus === false) {
+                this.modalQueryError = this.$t('ipcheck.recaptchaError');
+                return;
+            }
+
             let lang = this.$Lang;
             if (lang === 'zh') {
                 lang = 'zh-CN';
@@ -194,13 +353,17 @@ export default {
 
                     // 使用对应的转换函数更新 modalQueryResult
                     this.modalQueryResult = source.transform(data);
+                    this.isChecking = "idle";
                     break;
                 } catch (error) {
                     console.error("Error fetching IP details:", error);
                 }
             }
         },
-    }
+    },
+    mounted() {
+        this.checkRecaptchaSupport();
+    },
 }
 </script>
 
