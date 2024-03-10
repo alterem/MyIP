@@ -10,8 +10,8 @@
           <input v-if="isMobile" class="form-check-input" type="checkbox" id="collapseSwitch" @change="toggleCollapse"
             :checked="!isCardsCollapsed" @click="$trackEvent('IPCheck', 'ToggleClick', 'Collaspes');"
             aria-label="Toggle Card Display">
-          <label v-if="isMobile" class="form-check-label" for="collapseSwitch">&nbsp;<i class="bi bi-list-columns-reverse"
-              aria-hidden="true"></i></label>
+          <label v-if="isMobile" class="form-check-label" for="collapseSwitch">&nbsp;<i
+              class="bi bi-list-columns-reverse" aria-hidden="true"></i></label>
         </div>
 
         <div>
@@ -20,8 +20,8 @@
             @click="$trackEvent('IPCheck', 'ToggleClick', 'ShowMap');">
 
           <label class="form-check-label" for="toggleMapSwitch">
-            <i :class="['bi', isEnvBingMapKey ? 'bi bi-map-fill' : 'bi bi-map']" aria-hidden="true" role="button"
-              v-tooltip="$t('Tooltips.ToggleMaps')"></i>
+            <i :class="['bi', isEnvBingMapKey ? 'bi bi-map-fill' : 'bi bi-map']" aria-hidden="true"
+              aria-label="Toggle Map Display" v-tooltip="$t('Tooltips.ToggleMaps')"></i>
           </label>
         </div>
 
@@ -62,25 +62,26 @@
         <div v-for="(card, index) in ipDataCards" :key="card.id" :ref="card.id"
           :class="{ 'jn-opacity': !card.asn, 'col-xl-4': true, 'col-lg-6': true, 'col-md-6': true, 'mb-4': true }">
           <div class="card jn-card" :class="{
-            'dark-mode dark-mode-border': isDarkMode,
-            'jn-ip-card1': !isMobile && ipGeoSource === 0,
-            'jn-ip-card2': !isMobile && ipGeoSource !== 0,
-          }">
+      'dark-mode dark-mode-border': isDarkMode,
+      'jn-ip-card1': !isMobile && ipGeoSource === 0,
+      'jn-ip-card2': !isMobile && ipGeoSource !== 0,
+    }">
             <div class="card-header jn-ip-title jn-link1"
               :class="{ 'dark-mode-title': isDarkMode, 'bg-light': !isDarkMode }" style="font-weight: bold;">
               <span>
                 <i class="bi" :class="'bi-' + (index + 1) + '-circle-fill'"></i>&nbsp;
                 {{ $t('ipInfos.Source') }}: {{ card.source }}</span>
-              <button @click="refreshCard(card)" :class="['btn', isDarkMode ? 'btn-dark dark-mode-refresh' : 'btn-light']"
+              <button @click="refreshCard(card)"
+                :class="['btn', isDarkMode ? 'btn-dark dark-mode-refresh' : 'btn-light']"
                 :aria-label="'Refresh' + card.source" v-tooltip="$t('Tooltips.RefreshIPCard')">
                 <i class="bi bi-arrow-clockwise"></i></button>
             </div>
             <div class="p-3 placeholder-glow " :class="{
-              'dark-mode-title': isDarkMode,
-              'jn-link2-dark': isDarkMode,
-              'bg-light': !isDarkMode,
-              'jn-link2': !isDarkMode
-            }">
+      'dark-mode-title': isDarkMode,
+      'jn-link2-dark': isDarkMode,
+      'bg-light': !isDarkMode,
+      'jn-link2': !isDarkMode
+    }">
               <span class="jn-text col-auto">
                 <i class="bi bi-pc-display-horizontal"></i>&nbsp;
               </span>
@@ -90,14 +91,14 @@
                 <i v-if="isValidIP(card.ip)"
                   :class="copiedStatus[card.id] ? 'bi bi-clipboard-check-fill' : 'bi bi-clipboard-plus'"
                   @click="copyToClipboard(card.ip, card.id)" role="button"
-                  v-tooltip="{ title: $t('Tooltips.CopyIP'), placement: 'right' }"></i>
+                  v-tooltip="{ title: $t('Tooltips.CopyIP'), placement: 'right' }" :aria-label="'Copy' + card.ip"></i>
               </span>
               <span v-else class="placeholder col-10"></span>
             </div>
 
 
             <div v-if="(card.asn) || (card.ip === $t('ipInfos.IPv4Error')) || (card.ip === $t('ipInfos.IPv6Error'))
-              " class="card-body" :id="'IPInfo-' + (index + 1)">
+      " class="card-body" :id="'IPInfo-' + (index + 1)">
               <ul class="list-group list-group-flush" v-if="card.country_name">
 
                 <img v-if="isMapShown" :src="isDarkMode ? card.mapUrl_dark : card.mapUrl"
@@ -200,7 +201,7 @@
                   <div class="p-3">
                     <span v-if="asnInfos[card.asn]">
                       <i class="bi bi-info-circle-fill"></i> <span class="fw-light">{{ $t('ipInfos.ASNInfo.note')
-                      }}</span>
+                        }}</span>
                       <br />
                       <template v-for="item in asnInfoItems">
                         <span class="fw-light">
@@ -299,9 +300,10 @@ export default {
         { id: 4, text: 'KeyCDN', enabled: true },
         { id: 5, text: 'IP.SB', enabled: true },
       ],
+      pendingIPDetailsRequests: new Map(),
       ipDataCards: [
         {
-          id: "taobao",
+          id: "cnsource",
           ip: "",
           country_name: "",
           region: "",
@@ -314,7 +316,7 @@ export default {
           mapUrl: '/defaultMap.jpg',
           mapUrl_dark: '/defaultMap_dark.jpg',
           showMap: false,
-          source: "TaoBao",
+          source: "CN Source",
           showASNInfo: false,
         },
         {
@@ -408,6 +410,7 @@ export default {
       ipDataCache: new Map(),
       copiedStatus: {},
       bingMapLanguage: this.$Lang,
+      IPArray: [],
     };
   },
 
@@ -454,18 +457,42 @@ export default {
         });
     },
 
+    // 从中国来源获取 IP 地址
+    getIPfromCNSource() {
+      this.getIPFromIPIP().catch(() => {
+        this.getIPFromTaobao();
+      });
+    },
+
     // 从淘宝获取 IP 地址
     getIPFromTaobao() {
       window.ipCallback = (data) => {
-        var ip = data.ip;
+        let ip = data.ip;
         this.ipDataCards[0].source = "TaoBao";
         this.fetchIPDetails(0, ip);
+        this.IPArray = [...this.IPArray, ip];
+
+        document.head.removeChild(script);
         delete window.ipCallback;
       };
-      var script = document.createElement("script");
+      let script = document.createElement("script");
       script.src = "https://www.taobao.com/help/getip.php?callback=ipCallback";
       document.head.appendChild(script);
-      document.head.removeChild(script);
+    },
+
+    // 从 IPIP.net 获取 IP 地址
+    async getIPFromIPIP() {
+      try {
+        const response = await fetch("https://myip.ipip.net/json");
+        const data = await response.json();
+        const ip = data.data.ip;
+        this.IPArray = [...this.IPArray, ip];
+        this.ipDataCards[0].source = "IPIP.net";
+        this.fetchIPDetails(0, ip);
+      } catch (error) {
+        console.error("Error fetching IP from IPIP.net:", error);
+        throw new Error("Failed to fetch IP from IPIP.net");
+      }
     },
 
     // 从特殊源获取 IP 地址
@@ -497,6 +524,7 @@ export default {
 
         const data = await response.json();
         const ip = data.remote_addr;
+        this.IPArray = [...this.IPArray, ip];
         this.ipDataCards[1].source = "Upai";
         this.fetchIPDetails(1, ip);
       } catch (error) {
@@ -517,6 +545,7 @@ export default {
         const data = await response.json();
         const fullIp = data.ip;
         const ip = fullIp.includes(',') ? fullIp.split(',')[0] : fullIp;
+        this.IPArray = [...this.IPArray, ip];
         this.ipDataCards[1].source = "IPCheck.ing";
         this.fetchIPDetails(1, ip);
       } catch (error) {
@@ -534,6 +563,7 @@ export default {
         const ipLine = lines.find((line) => line.startsWith("ip="));
         if (ipLine) {
           const ip = ipLine.split("=")[1];
+          this.IPArray = [...this.IPArray, ip];
           this.fetchIPDetails(2, ip);
         }
       } catch (error) {
@@ -552,6 +582,7 @@ export default {
         const ipLine = lines.find((line) => line.startsWith("ip="));
         if (ipLine) {
           const ip = ipLine.split("=")[1];
+          this.IPArray = [...this.IPArray, ip];
           this.fetchIPDetails(3, ip);
         }
       } catch (error) {
@@ -569,6 +600,7 @@ export default {
         }
 
         const data = await response.json();
+        this.IPArray = [...this.IPArray, data.ip];
         this.fetchIPDetails(4, data.ip);
       } catch (error) {
         console.error("Error fetching IPv4 address from ipify:", error);
@@ -585,6 +617,7 @@ export default {
         }
 
         const data = await response.json();
+        this.IPArray = [...this.IPArray, data.ip];
         this.fetchIPDetails(5, data.ip);
       } catch (error) {
         console.error("Error fetching IPv6 address from ipify:", error);
@@ -600,56 +633,72 @@ export default {
       let lang = this.$Lang;
       if (lang === 'zh') {
         lang = 'zh-CN';
-      };
+      }
 
       // 检查缓存中是否已有该 IP 的数据
       if (this.ipDataCache.has(ip)) {
-        // 使用缓存的数据填充卡片
         const cachedData = this.ipDataCache.get(ip);
         Object.assign(card, cachedData);
         return;
       }
 
-      // 不同的源
-      const sources = [
-        { id: 0, url: `/api/ipchecking?ip=${ip}&lang=${lang}`, transform: this.transformDataFromIPapi },
-        { id: 1, url: `/api/ipinfo?ip=${ip}`, transform: this.transformDataFromIPapi },
-        { id: 2, url: `/api/ipapicom?ip=${ip}&lang=${lang}`, transform: this.transformDataFromIPapi },
-        { id: 3, url: `https://ipapi.co/${ip}/json/`, transform: this.transformDataFromIPapi },
-        { id: 4, url: `/api/keycdn?ip=${ip}`, transform: this.transformDataFromIPapi },
-        { id: 5, url: `/api/ipsb?ip=${ip}`, transform: this.transformDataFromIPapi },
-      ];
-
-      let currentSourceIndex = sourceID !== null ? sources.findIndex(source => source.id === sourceID) : 0;
-      let attempts = 0;
-
-      while (attempts < sources.length) {
-        const source = sources[currentSourceIndex];
-
-        try {
-          const response = await fetch(source.url);
-          const data = await response.json();
-
-          // 根据数据源进行数据转换
-          const cardData = source.transform(data);
-
-          if (cardData) {
-            this.$store.commit('SET_IP_GEO_SOURCE', source.id);
-            localStorage.setItem("ipGeoSource", parseInt(source.id));
-            Object.assign(card, cardData);
-            this.ipDataCache.set(ip, cardData);
-            return source.id;
-          }
-        } catch (error) {
-          console.error("Error fetching IP details from source " + source.id + ":", error);
-          this.sources[source.id].enabled = false;
-          currentSourceIndex = (currentSourceIndex + 1) % sources.length;
-          attempts++;
+      // 检查是否有正在进行的查询，如果有，则等待该查询完成
+      if (this.pendingIPDetailsRequests.has(ip)) {
+        await this.pendingIPDetailsRequests.get(ip);
+        const cachedData = this.ipDataCache.get(ip);
+        if (cachedData) {
+          Object.assign(card, cachedData);
         }
+        return;
       }
 
-      if (attempts >= sources.length) {
-        console.error("All sources failed to fetch IP details for IP: " + ip);
+      const fetchPromise = (async () => {
+        const sources = [
+          { id: 0, url: `/api/ipchecking?ip=${ip}&lang=${lang}`, transform: this.transformDataFromIPapi },
+          { id: 1, url: `/api/ipinfo?ip=${ip}`, transform: this.transformDataFromIPapi },
+          { id: 2, url: `/api/ipapicom?ip=${ip}&lang=${lang}`, transform: this.transformDataFromIPapi },
+          { id: 3, url: `https://ipapi.co/${ip}/json/`, transform: this.transformDataFromIPapi },
+          { id: 4, url: `/api/keycdn?ip=${ip}`, transform: this.transformDataFromIPapi },
+          { id: 5, url: `/api/ipsb?ip=${ip}`, transform: this.transformDataFromIPapi },
+        ];
+
+        let currentSourceIndex = sourceID !== null ? sources.findIndex(source => source.id === sourceID) : 0;
+        let attempts = 0;
+
+        while (attempts < sources.length) {
+          const source = sources[currentSourceIndex];
+          try {
+            const response = await fetch(source.url);
+            const data = await response.json();
+            const cardData = source.transform(data);
+
+            if (cardData) {
+              this.$store.commit('SET_IP_GEO_SOURCE', source.id);
+              localStorage.setItem("ipGeoSource", source.id.toString());
+              Object.assign(card, cardData);
+              this.ipDataCache.set(ip, cardData);
+              return;
+            }
+          } catch (error) {
+            console.error("Error fetching IP details from source " + source.id + ":", error);
+            currentSourceIndex = (currentSourceIndex + 1) % sources.length;
+            attempts++;
+          }
+        }
+
+        throw new Error("All sources failed to fetch IP details for IP: " + ip);
+      })();
+
+      // 将此 Promise 存储在 pendingIPDetailsRequests 中，以避免重复查询
+      this.pendingIPDetailsRequests.set(ip, fetchPromise);
+
+      try {
+        await fetchPromise;
+      } catch (error) {
+        console.error(error);
+      } finally {
+        // 完成后，从 pendingIPDetailsRequests 中移除
+        this.pendingIPDetailsRequests.delete(ip);
       }
     },
 
@@ -756,8 +805,8 @@ export default {
     // 检查所有 IP 地址
     async checkAllIPs() {
       const ipFunctions = [
+        this.getIPfromCNSource,
         this.getIPFromSpecial,
-        this.getIPFromTaobao,
         this.getIPFromCloudflare_V4,
         this.getIPFromCloudflare_V6,
         this.getIPFromIpify_V4,
@@ -806,6 +855,10 @@ export default {
         case "TaoBao":
           this.getIPFromTaobao(card);
           this.$trackEvent('IPCheck', 'RefreshClick', 'TaoBao');
+          break;
+        case "IPIP.net":
+          this.getIPFromIPIP(card);
+          this.$trackEvent('IPCheck', 'RefreshClick', 'IPIP.net');
           break;
         default:
           console.error("Undefind Source:", card.source);
@@ -881,9 +934,9 @@ export default {
     isCardsCollapsed(newVal) {
       localStorage.setItem('isCardsCollapsed', JSON.stringify(newVal));
     },
-    ipDataCards: {
-      handler(newValue) {
-        this.$store.commit('updateGlobalIpDataCards', newValue);
+    IPArray: {
+      handler() {
+        this.$store.commit('updateGlobalIpDataCards', this.IPArray);
       },
       deep: true,
     },
@@ -933,9 +986,5 @@ export default {
   width: 2px;
   border-left: 2px dashed #e3e3e3;
   z-index: 1;
-}
-
-.jn-ip-font {
-  zoom: 0.8;
 }
 </style>

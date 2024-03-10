@@ -8,9 +8,18 @@
     "DNSLeakTest": "DNS Leak Test",
     "SpeedTest": "Speed Test",
     "PingTest": "Global Latency",
-    "MTRTest": "MTR Test"
+    "MTRTest": "MTR Test",
+    "RuleTest": "Rule Test"
   },
-  "Tooltips":{
+  "ruletest": {
+    "Title": "Rule Test",
+    "Name": "Test",
+    "Note": "Rule test is used to determine if the proxy software's domain-based rules are set correctly. Before conducting the test, you need to refer to the card below and set different domain-based routing rules for the 8 different URLs of IPCheck.ing in your proxy software.",
+    "StatusWait": "Awaiting Test or Test Error",
+    "StatusError": "Test Error",
+    "Country": "Proxy region"
+  },
+  "Tooltips": {
     "RefreshIPCard": "Refresh IP Card",
     "RefreshConnectivityTests": "Refresh Connectivity Tests",
     "RefreshWebRTC": "Refresh WebRTC Test",
@@ -22,12 +31,13 @@
     "CopyIP": "Copy IP Address",
     "InfoMask": "Hide IP Information",
     "QueryIP": "Query IP Address",
-    "GithubLink": "View Source Code on GitHub"
+    "GithubLink": "View Source Code on GitHub",
+    "RefreshRuleTests": "Refresh Rule Tests"
   },
   "ipInfos": {
     "id": "ipinfos",
     "Title": "IP Infos",
-    "Notes": "IP data will be checked from 6 sources. If there is only 1 IP stack currently, sources without data will show as empty.",
+    "Notes": "The program will first check your IP address from 6 different sources (including IPv4 and IPv6), and then query the corresponding geographical data from the IP geolocation source you selected. If there is only 1 IP stack, the source without data will be displayed as empty.",
     "Simple": "Simple",
     "Map": "Map",
     "MapUnavailable": "Map Unavailable",
@@ -194,7 +204,8 @@
     "Help": "Show Shortcut Keys",
     "HelpNote": "People who use shortcuts are really awesome!",
     "GoNext": "Next Card",
-    "GoPrevious": "Previous Card"
+    "GoPrevious": "Previous Card",
+    "RefreshRuleTests": "Refresh Rule Tests"
   },
   "page": {
     "title": "IPCheck.ing - Check My IP Address and Geolocation - Check WebRTC Connection IP - DNS Leak Test - Speed Test - Jason Ng Open Source",
@@ -460,6 +471,20 @@
           {
             "type": "improve",
             "change": "Optimized UI for displaying IP information"
+          }
+        ]
+      },
+      {
+        "version": "v3.5",
+        "date": "Mar 3, 2024",
+        "content": [
+          {
+            "type": "add",
+            "change": "Added rule test feature"
+          },
+          {
+            "type": "improve",
+            "change": "Some Improvements"
           }
         ]
       }

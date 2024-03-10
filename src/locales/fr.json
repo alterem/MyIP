@@ -8,7 +8,16 @@
         "DNSLeakTest": "Test de fuite DNS",
         "SpeedTest": "Test de vitesse",
         "PingTest": "Latence mondiale",
-        "MTRTest": "Test MTR"
+        "MTRTest": "Test MTR",
+        "RuleTest": "Test de règles"
+    },
+    "ruletest": {
+        "Title": "Test de règles",
+        "Name": "Test",
+        "Note": "Le test de règles est utilisé pour déterminer si les paramètres de règles basées sur le nom de domaine de votre logiciel proxy sont corrects. Avant de procéder au test, veuillez vous référer à la carte ci-dessous et configurer des règles de redirection de domaine différentes pour les 8 URL différentes d'IPCheck.ing dans votre logiciel proxy.",
+        "StatusWait": "En attente du test ou erreur de connexion",
+        "StatusError": "Erreur de test",
+        "Country": "Région de proxy"
     },
     "Tooltips": {
         "RefreshIPCard": "Actualiser la carte IP",
@@ -22,12 +31,13 @@
         "CopyIP": "Copier l'adresse IP",
         "InfoMask": "Masquer les informations IP",
         "QueryIP": "Interroger l'adresse IP",
-        "GithubLink": "Voir le code source sur GitHub"
+        "GithubLink": "Voir le code source sur GitHub",
+        "RefreshRuleTests": "Actualiser les tests de règles"
     },
     "ipInfos": {
         "id": "ipinfos",
         "Title": "Infos IP",
-        "Notes": "Les données IP seront vérifiées à partir de 6 sources. S'il n'y a qu'une seule pile IP actuellement, les sources sans données s'afficheront comme vides.",
+        "Notes": "Le programme vérifie d'abord votre adresse IP à partir de 6 sources différentes (y compris IPv4 et IPv6), puis interroge les données géographiques correspondantes à partir de la source d'informations de localisation IP que vous avez sélectionnée. Si vous n'avez qu'une seule pile IP active, les sources de données non disponibles seront affichées comme vides.",
         "Simple": "Simple",
         "Map": "Carte",
         "MapUnavailable": "Carte non disponible",
@@ -194,7 +204,8 @@
         "Help": "Afficher les raccourcis clavier",
         "HelpNote": "Les personnes qui utilisent des raccourcis clavier sont vraiment géniales !",
         "GoNext": "Carte suivante",
-        "GoPrevious": "Carte précédente"
+        "GoPrevious": "Carte précédente",
+        "RefreshRuleTests": "Actualiser les tests de règles"
     },
     "page": {
         "title": "IPCheck.ing - Vérifier mon adresse IP et géolocalisation - Vérifier l'adresse IP de connexion WebRTC - Test de fuite DNS - Test de vitesse - Jason Ng Open Source",
@@ -460,6 +471,20 @@
                     {
                         "type": "improve",
                         "change": "Optimisation de l'interface utilisateur pour l'affichage des informations IP"
+                    }
+                ]
+            },
+            {
+                "version": "v3.5",
+                "date": "Mar 3, 2024",
+                "content": [
+                    {
+                        "type": "add",
+                        "change": "Ajout du test de règles"
+                    },
+                    {
+                        "type": "improve",
+                        "change": "Quelques améliorations"
                     }
                 ]
             }

@@ -195,7 +195,7 @@ export default {
             }
             // 创建一个 script 元素
             const script = document.createElement('script');
-            script.src = `https://www.recaptcha.net/recaptcha/api.js?render=${import.meta.env.VITE_RECAPTCHA_SITE_KEY}`;
+            script.src = `https://www.google.com/recaptcha/api.js?render=${import.meta.env.VITE_RECAPTCHA_SITE_KEY}`;
             script.async = true;
             script.defer = true;
             document.head.appendChild(script);
@@ -330,10 +330,10 @@ export default {
             const sources = [
                 { id: 0, url: `/api/ipchecking?ip=${ip}&lang=${lang}`, transform: this.transformDataFromIPapi },
                 { id: 1, url: `/api/ipinfo?ip=${ip}`, transform: this.transformDataFromIPapi },
-                { id: 2, url: `/api/ipsb?ip=${ip}`, transform: this.transformDataFromIPapi },
-                { id: 3, url: `/api/ipapicom?ip=${ip}&lang=${lang}`, transform: this.transformDataFromIPapi },
-                { id: 4, url: `https://ipapi.co/${ip}/json/`, transform: this.transformDataFromIPapi },
-                { id: 5, url: `api/keycdn?ip=${ip}`, transform: this.transformDataFromIPapi },
+                { id: 2, url: `/api/ipapicom?ip=${ip}&lang=${lang}`, transform: this.transformDataFromIPapi },
+                { id: 3, url: `https://ipapi.co/${ip}/json/`, transform: this.transformDataFromIPapi },
+                { id: 4, url: `/api/keycdn?ip=${ip}`, transform: this.transformDataFromIPapi },
+                { id: 5, url: `/api/ipsb?ip=${ip}`, transform: this.transformDataFromIPapi },
             ];
 
             // 根据指定的源获取数据
